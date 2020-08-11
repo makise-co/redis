@@ -36,7 +36,7 @@ $lazyConnection->set('key', 'value');
 ```
 
 ## Additional methods
-* RedisLazyConnection->transaction - giving an ability to execute sequence of command on a single connection.
+* RedisLazyConnection->transaction - giving an ability to execute sequence of commands on a single connection.
     Example:
     ```php
     /** @var \MakiseCo\Redis\RedisPool $pool */
