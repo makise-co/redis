@@ -122,7 +122,7 @@ class RedisConnectionConfig implements ConnectionConfigInterface
             $config['database'] ?? 0,
             $config['timeout'] ?? 0.0,
             $config['reserved'] ?? null,
-            $config['retryInterval'] ?? $config['retry_interval'] ?? 0.0,
+            $config['retryInterval'] ?? $config['retry_interval'] ?? 0,
             $config['readTimeout'] ?? $config['read_timeout'] ?? 0.0,
         );
     }
