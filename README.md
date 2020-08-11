@@ -2,6 +2,10 @@
 Makise-Co Adapter of PHP Redis extenstion
 
 ## Usage
+**WARNING**: This package can be used only in the Swoole Coroutine context
+
+*INFO*: To get non-blocking Redis connection you should call \Swoole\Runtime::enableCoroutine();
+
 ```php
 <?php
 
@@ -30,3 +34,17 @@ $lazyConnection = new \MakiseCo\Redis\RedisLazyConnection($pool);
 // WARNING: Transactions and pipelining is not supported yet
 $lazyConnection->set('key', 'value');
 ```
+
+## Additional methods
+* RedisLazyConnection->transaction - giving an ability to execute sequence of command on a single connection.
+    Example:
+    ```php
+    /** @var \MakiseCo\Redis\RedisPool $pool */
+    $conn = new \MakiseCo\Redis\RedisLazyConnection($pool);
+    $value = $conn->transaction(function (\Redis $redis) {
+        $redis->set('test', '123');
+    
+        return $redis->get('test');
+    });
+    // $value is '123'
+    ```

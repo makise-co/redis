@@ -41,6 +41,173 @@ class RedisLazyConnection extends Redis
     }
 
     /**
+     * Execute operations over a single connection
+     *
+     * @param \Closure $closure
+     * @return mixed
+     * @throws \Smf\ConnectionPool\BorrowConnectionTimeoutException
+     */
+    public function transaction(\Closure $closure)
+    {
+        $connection = $this->pool->borrow();
+
+        try {
+            return $closure($connection);
+        } finally {
+            $this->pool->return($connection);
+        }
+    }
+
+    public function connect(
+        $host,
+        $port = 6379,
+        $timeout = 0.0,
+        $reserved = null,
+        $retryInterval = 0,
+        $readTimeout = 0.0
+    ) {
+        throw new \LogicException('connect is not supported');
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function open(
+        $host,
+        $port = 6379,
+        $timeout = 0.0,
+        $reserved = null,
+        $retryInterval = 0,
+        $readTimeout = 0.0
+    ) {
+        throw new \LogicException('open is not supported');
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function isConnected()
+    {
+        throw new \LogicException('isConnected is not supported');
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getHost()
+    {
+        return $this->call(__FUNCTION__, func_get_args());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getPort()
+    {
+        return $this->call(__FUNCTION__, func_get_args());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getDbNum()
+    {
+        return $this->call(__FUNCTION__, func_get_args());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getTimeout()
+    {
+        return $this->call(__FUNCTION__, func_get_args());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getReadTimeout()
+    {
+        return $this->call(__FUNCTION__, func_get_args());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getPersistentID()
+    {
+        return $this->call(__FUNCTION__, func_get_args());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getAuth()
+    {
+        return $this->call(__FUNCTION__, func_get_args());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function pconnect(
+        $host,
+        $port = 6379,
+        $timeout = 0.0,
+        $persistentId = null,
+        $retryInterval = 0,
+        $readTimeout = 0.0
+    ) {
+        throw new \LogicException('pconnect is not supported');
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function popen(
+        $host,
+        $port = 6379,
+        $timeout = 0.0,
+        $persistentId = '',
+        $retryInterval = 0,
+        $readTimeout = 0.0
+    ) {
+        throw new \LogicException('popen is not supported');
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function close()
+    {
+        throw new \LogicException('close is not supported');
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function swapdb($srcdb, $dstdb)
+    {
+        return $this->call(__FUNCTION__, func_get_args());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setOption($option, $value)
+    {
+        throw new \LogicException('setOption is not supported');
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getOption($option)
+    {
+        return $this->call(__FUNCTION__, func_get_args());
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function ping()
