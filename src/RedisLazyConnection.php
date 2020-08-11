@@ -10,8 +10,8 @@ declare(strict_types=1);
 
 namespace MakiseCo\Redis;
 
-use Smf\ConnectionPool\ConnectionPool;
 use Redis;
+use Smf\ConnectionPool\ConnectionPool;
 
 use function call_user_func_array;
 
@@ -1132,16 +1132,8 @@ class RedisLazyConnection extends Redis
     /**
      * {@inheritDoc}
      */
-    public function zAdd(
-        $key,
-        $options,
-        $score1,
-        $value1 = null,
-        $score2 = null,
-        $value2 = null,
-        $scoreN = null,
-        $valueN = null
-    ) {
+    public function zAdd($key, $score, $value, ...$extra_args)
+    {
         return $this->call(__FUNCTION__, func_get_args());
     }
 
