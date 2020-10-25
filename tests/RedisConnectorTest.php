@@ -10,7 +10,7 @@ declare(strict_types=1);
 
 namespace MakiseCo\Redis\Tests;
 
-use MakiseCo\Redis\RedisConnectionConfig;
+use MakiseCo\Redis\ConnectionConfig;
 use MakiseCo\Redis\RedisConnector;
 use PHPUnit\Framework\TestCase;
 
@@ -18,7 +18,7 @@ class RedisConnectorTest extends TestCase
 {
     public function testConnect(): void
     {
-        $config = RedisConnectionConfig::fromArray(
+        $config = ConnectionConfig::fromArray(
             [
                 'host' => '127.0.0.1',
                 'port' => 6379,
@@ -28,7 +28,7 @@ class RedisConnectorTest extends TestCase
         );
 
         $connector = new RedisConnector();
-        $redis = $connector->connect(['connection_config' => $config]);
+        $redis = $connector->connect($config);
 
         self::assertTrue($redis->isConnected());
         self::assertSame(1.0, $redis->getTimeout());

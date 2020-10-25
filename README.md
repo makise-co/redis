@@ -12,39 +12,38 @@ Makise-Co Adapter of PHP Redis extenstion
 declare(strict_types=1);
 
 $pool = new \MakiseCo\Redis\RedisPool(
-    // look at pool config class reference
-    new \MakiseCo\Pool\PoolConfig(...),
-    null,
     // pass standard redis extension connect parameters
-    \MakiseCo\Redis\RedisConnectionConfig::fromArray([]),
+    \MakiseCo\Redis\ConnectionConfig::fromArray([
+        'host' => '127.0.0.1',
+        'port' => 6379,
+        'database' => 0,
+//        'password' => 'secret',
+        'options' => [
+            \Redis::OPT_SERIALIZER => \Redis::SERIALIZER_MSGPACK,
+        ]
+    ]),
 );
 
 // initialize connection pool
 $pool->init();
 
-$redisConnection = $pool->borrow();
+$pool->set('key', 'value');
+$pool->del('key');
+$pool
+    ->multi()
+    ->set('key', 'value')
+    ->exec();
 
-// do something with connection
+// However pool cannot be used as \Redis instance for this purpose you should use RedisLazyConnection
+// RedisLazyConnection is a pool wrapper that extends \Redis class
 
-$pool->return($redisConnection);
-
-// or you can use LazyConnection that will automatically take and return connection from the pool
 $lazyConnection = new \MakiseCo\Redis\RedisLazyConnection($pool);
-// connection is automatically borrowed and returned to the pool
-// WARNING: Transactions and pipelining is not supported yet
 $lazyConnection->set('key', 'value');
-```
+$lazyConnection->del('key');
 
-## Additional methods
-* RedisLazyConnection->transaction - giving an ability to execute sequence of commands over a single connection.
-    Example:
-    ```php
-    /** @var \MakiseCo\Redis\RedisPool $pool */
-    $conn = new \MakiseCo\Redis\RedisLazyConnection($pool);
-    $value = $conn->transaction(function (\Redis $redis) {
-        $redis->set('test', '123');
-    
-        return $redis->get('test');
-    });
-    // $value is '123'
-    ```
+$lazyConnection
+    ->multi()
+    ->set('key', 'value')
+    ->exec();
+
+```

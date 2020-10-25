@@ -10,6 +10,8 @@ declare(strict_types=1);
 
 namespace MakiseCo\Redis\Tests;
 
+use MakiseCo\Redis\PooledRedisConnection;
+use MakiseCo\Redis\RedisConnection;
 use MakiseCo\Redis\RedisLazyConnection;
 use MakiseCo\Redis\RedisPool;
 use PHPUnit\Framework\TestCase;
@@ -39,23 +41,59 @@ class RedisLazyConnectionTest extends TestCase
         });
     }
 
-    public function testFakeTransaction(): void
+    public function testTransaction(): void
     {
         $this->runCoroWithPool(static function (RedisPool $pool) {
+            $pool->setMaxActive(2);
+
+            $pool->del('key');
+
             $conn = new RedisLazyConnection($pool);
-            $res = $conn->transaction(static function (\Redis $redis) use ($pool) {
-                self::assertTrue($redis->isConnected());
-                self::assertSame(0, $pool->getIdleCount());
 
-                $redis->set('test', '456');
-                self::assertSame('456', $redis->get('test'));
+            // starting transaction
+            $redis = $conn->multi();
+            self::assertInstanceOf(PooledRedisConnection::class, $redis);
 
-                return true;
-            });
+            // setting key in transaction
+            $redis->set('key', '123');
 
-            self::assertTrue($res);
+            // checking the key is not seen by another connection
+            self::assertNotSame('123', $conn->get('key'));
 
+            // committing transaction
+            $redis->exec();
+
+            // checking the key is now seen by another connection
+            self::assertSame('123', $conn->get('key'));
+
+            // connections should be returned to the pool
+            self::assertSame(2, $pool->getIdleCount());
+
+            // ------ TESTING ROLLBACK
+
+            $pool->del('key');
+
+            // starting transaction
+            $redis = $conn->multi();
+            self::assertInstanceOf(PooledRedisConnection::class, $redis);
+
+            // One free connection should remain
             self::assertSame(1, $pool->getIdleCount());
+
+            // setting key in transaction
+            $redis->set('key', '123');
+
+            // checking the key is not seen by another connection
+            self::assertNotSame('123', $conn->get('key'));
+
+            // transaction rollback
+            $redis->discard();
+
+            // checking key changes does not happen
+            self::assertNotSame('123', $conn->get('key'));
+
+            // connections should be returned to the pool
+            self::assertSame(2, $pool->getIdleCount());
         });
     }
 }

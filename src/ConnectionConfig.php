@@ -10,9 +10,9 @@ declare(strict_types=1);
 
 namespace MakiseCo\Redis;
 
-use MakiseCo\Pool\ConnectionConfigInterface;
+use MakiseCo\Connection\ConnectionConfigInterface;
 
-class RedisConnectionConfig implements ConnectionConfigInterface
+class ConnectionConfig implements ConnectionConfigInterface
 {
     private string $host;
     private int $port;
@@ -22,6 +22,7 @@ class RedisConnectionConfig implements ConnectionConfigInterface
     private $reserved;
     private int $retryInterval;
     private float $readTimeout;
+    private array $options;
 
     /**
      * RedisConnectionConfig constructor.
@@ -33,6 +34,7 @@ class RedisConnectionConfig implements ConnectionConfigInterface
      * @param null $reserved
      * @param int $retryInterval
      * @param float $readTimeout
+     * @param array $options
      */
     public function __construct(
         string $host,
@@ -42,7 +44,8 @@ class RedisConnectionConfig implements ConnectionConfigInterface
         float $timeout = 0.0,
         $reserved = null,
         int $retryInterval = 0,
-        float $readTimeout = 0.0
+        float $readTimeout = 0.0,
+        array $options = []
     ) {
         $this->host = $host;
         $this->port = $port;
@@ -52,6 +55,7 @@ class RedisConnectionConfig implements ConnectionConfigInterface
         $this->reserved = $reserved;
         $this->retryInterval = $retryInterval;
         $this->readTimeout = $readTimeout;
+        $this->options = $options;
     }
 
     public function getHost(): string
@@ -99,6 +103,11 @@ class RedisConnectionConfig implements ConnectionConfigInterface
         return $this->readTimeout;
     }
 
+    public function getOptions(): array
+    {
+        return $this->options;
+    }
+
     public function toArray(): array
     {
         return [
@@ -110,6 +119,7 @@ class RedisConnectionConfig implements ConnectionConfigInterface
             'reserved' => $this->reserved,
             'retryInterval' => $this->retryInterval,
             'readTimeout' => $this->readTimeout,
+            'options' => $this->options,
         ];
     }
 
@@ -124,11 +134,17 @@ class RedisConnectionConfig implements ConnectionConfigInterface
             $config['reserved'] ?? null,
             $config['retryInterval'] ?? $config['retry_interval'] ?? 0,
             $config['readTimeout'] ?? $config['read_timeout'] ?? 0.0,
+            $config['options'] ?? [],
         );
     }
 
     public function __toString(): string
     {
         throw new \LogicException('__toString() is not implemented');
+    }
+
+    public function getConnectionString(): string
+    {
+        return '';
     }
 }

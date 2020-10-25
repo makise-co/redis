@@ -12,7 +12,7 @@ namespace MakiseCo\Redis\Tests;
 
 use Closure;
 use MakiseCo\Pool\PoolConfig;
-use MakiseCo\Redis\RedisConnectionConfig;
+use MakiseCo\Redis\ConnectionConfig;
 use MakiseCo\Redis\RedisPool;
 use Swoole\Coroutine;
 use Swoole\Event;
@@ -28,7 +28,7 @@ trait CoroutineTestTrait
     public function runCoroWithPool(Closure $closure, ...$args): void
     {
         $this->runCoro(static function () use ($closure, $args) {
-            $config = RedisConnectionConfig::fromArray(
+            $config = ConnectionConfig::fromArray(
                 [
                     'host' => '127.0.0.1',
                     'port' => 6379,
@@ -37,9 +37,7 @@ trait CoroutineTestTrait
                 ]
             );
 
-            $poolConfig = new PoolConfig();
-
-            $pool = new RedisPool($poolConfig, null, $config);
+            $pool = new RedisPool($config);
             $pool->init();
 
             $closure(...array_merge([$pool], ...$args));
