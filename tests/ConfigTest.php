@@ -10,14 +10,14 @@ declare(strict_types=1);
 
 namespace MakiseCo\Redis\Tests;
 
-use MakiseCo\Redis\RedisConnectionConfig;
+use MakiseCo\Redis\ConnectionConfig;
 use PHPUnit\Framework\TestCase;
 
 class ConfigTest extends TestCase
 {
     public function testConfigCreated(): void
     {
-        $config = RedisConnectionConfig::fromArray(
+        $config = ConnectionConfig::fromArray(
             [
                 'host' => 'host.docker.internal',
             ]

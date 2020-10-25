@@ -10,28 +10,51 @@ declare(strict_types=1);
 
 namespace MakiseCo\Redis;
 
-use MakiseCo\Pool\ConnectionConfigInterface;
-use MakiseCo\Pool\ConnectionPool;
-use MakiseCo\Pool\PoolConfigInterface;
-use Redis;
-use Smf\ConnectionPool\Connectors\ConnectorInterface;
+use MakiseCo\Connection\ConnectorInterface;
+use MakiseCo\Pool\Pool;
 
-class RedisPool extends ConnectionPool
+/**
+ * @mixin \Redis
+ */
+class RedisPool extends Pool
 {
-    public function __construct(
-        PoolConfigInterface $poolConfig,
-        ?ConnectorInterface $connector,
-        ConnectionConfigInterface $connectionConfig
-    ) {
-        if (null === $connector) {
-            $connector = new RedisConnector();
-        }
-
-        parent::__construct($poolConfig, $connector, $connectionConfig);
+    protected function createDefaultConnector(): ConnectorInterface
+    {
+        return new RedisConnector();
     }
 
-    public function borrow(): Redis
+    public function multi(int $mode = \Redis::MULTI)
     {
-        return parent::borrow();
+        /** @var RedisConnection $connection */
+        $connection = $this->pop();
+
+        $newRedis = $connection->multi($mode);
+
+        return new PooledRedisConnection($newRedis, function () use ($connection) {
+            $this->push($connection);
+        });
+    }
+
+    public function pipeline()
+    {
+        return $this->multi(\Redis::PIPELINE);
+    }
+
+    /**
+     * Call method on redis connection
+     *
+     * @param string $method
+     * @param mixed $args
+     * @return mixed
+     */
+    public function __call($method, $args)
+    {
+        $connection = $this->pop();
+
+        try {
+            return $connection->{$method}(...$args);
+        } finally {
+            $this->push($connection);
+        }
     }
 }
