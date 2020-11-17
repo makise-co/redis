@@ -13,6 +13,9 @@ namespace MakiseCo\Redis;
 use Closure;
 use Redis;
 
+/**
+ * Represents Redis transaction object
+ */
 class PooledRedisConnection extends Redis
 {
     use RedisTrait;
@@ -30,6 +33,15 @@ class PooledRedisConnection extends Redis
     {
         $this->connection = $connection;
         $this->release = $release;
+    }
+
+    public function __destruct()
+    {
+        try {
+            $this->discard();
+        } catch (\Throwable $e) {
+            // ignore errors
+        }
     }
 
     private function releaseConnection(): void

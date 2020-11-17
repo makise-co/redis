@@ -11,10 +11,10 @@ declare(strict_types=1);
 namespace MakiseCo\Redis\Tests;
 
 use MakiseCo\Redis\PooledRedisConnection;
-use MakiseCo\Redis\RedisConnection;
 use MakiseCo\Redis\RedisLazyConnection;
 use MakiseCo\Redis\RedisPool;
 use PHPUnit\Framework\TestCase;
+use Swoole\Coroutine;
 
 class RedisLazyConnectionTest extends TestCase
 {
@@ -94,6 +94,20 @@ class RedisLazyConnectionTest extends TestCase
 
             // connections should be returned to the pool
             self::assertSame(2, $pool->getIdleCount());
+        });
+    }
+
+    public function testTransactionDiscarded(): void
+    {
+        $this->runCoroWithPool(static function (RedisPool $pool) {
+            $pool->setMaxActive(1);
+            $pool->set('test', '123');
+
+            $transaction = $pool->multi();
+            $transaction->set('test', '456');
+            unset($transaction);
+
+            self::assertSame(1, $pool->getIdleCount());
         });
     }
 }
